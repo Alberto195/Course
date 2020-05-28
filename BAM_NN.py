@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import multiprocessing
 import numpy as np
-import tensorflow as tf
+import tensorflow as tf #pip install tensorflow-gpu==1.15
 from keras.datasets import mnist
 
 np.random.seed(1000)
