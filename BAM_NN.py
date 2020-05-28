@@ -10,10 +10,8 @@ tf.set_random_seed(1000)
 width = 28
 height = 28
 batch_size = 10
-cicle_num = 100
-code_length = 1024
+cicle_num = 300
 graph = tf.Graph()
-use_gpu = True
 ###############################
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data('C:/mnist/t10k-images.idx3-ubyte')
 ###############################
@@ -33,7 +31,7 @@ def encoder(encoder_input):
 
     d_layer_1 = tf.layers.dense(inputs=conv_output, units=1024, activation=tf.nn.tanh)
 
-    code_layer = tf.layers.dense(inputs=d_layer_1, units=code_length, activation=tf.nn.tanh)
+    code_layer = tf.layers.dense(inputs=d_layer_1, units=1024, activation=tf.nn.tanh)
 
     return code_layer
 
@@ -75,7 +73,7 @@ with graph.as_default():
     with tf.device('/cpu:0'):
         global_step = tf.Variable(0, trainable=False)
 
-    with tf.device('/gpu:0' if use_gpu else '/cpu:0'):
+    with tf.device('/gpu:0' if True else '/cpu:0'):
         input_images = tf.placeholder(tf.float32, shape=(None, height, width, 3))
         output_images = tf.placeholder(tf.float32, shape=(None, height, width, 3))
         t_batch_size = tf.placeholder(tf.int32, shape=())
@@ -103,31 +101,13 @@ def prediction(X, bs=1):
     return session.run([output_batch], feed_dict=feed_dict)[0]
 
 ###############################
-def story(t):
-    oimages = np.zeros(shape=(20, height, width, 3), dtype=np.uint8)
-    oimages[0, :, :, :] = X_source[t]
-
-    for i in range(1, 20):
-        oimages[i, :, :, :] = prediction(oimages[i - 1])
-
-    fig, ax = plt.subplots(2, 10, figsize=(18, 4))
-
-    for i in range(2):
-        for j in range(10):
-            ax[i, j].get_xaxis().set_visible(False)
-            ax[i, j].get_yaxis().set_visible(False)
-            ax[i, j].imshow(oimages[(10 * i) + j])
-
-    plt.show()
-
-###############################
 if __name__ == '__main__':
 
     config = tf.ConfigProto(intra_op_parallelism_threads=multiprocessing.cpu_count(),
                             inter_op_parallelism_threads=multiprocessing.cpu_count(),
                             allow_soft_placement=True,
                             device_count={'CPU': 1,
-                                          'GPU': 1 if use_gpu else 0})
+                                          'GPU': 1 if True else 0})
 
     session = tf.InteractiveSession(graph=graph, config=config)
 
